@@ -16,25 +16,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Student {
-  id: string;
-  full_name: string;
-  role: string;
-  phone_number: string | null;
-  created_at: string;
+interface Grade {
+  id: number;
+  name: string;
+  display_name: string;
 }
 
-const StudentsPage = () => {
+const ClassesPage = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["grades"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("role", "student");
+        .from("grades")
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -43,30 +40,23 @@ const StudentsPage = () => {
 
   useEffect(() => {
     if (data) {
-      setStudents(data);
+      setGrades(data);
     }
   }, [data]);
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<Grade>[] = [
     {
-      accessorKey: "full_name",
-      header: "Name",
+      accessorKey: "display_name",
+      header: "Class Name",
     },
     {
-      accessorKey: "phone_number",
-      header: "Phone",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Join Date",
-      cell: ({ row }) => {
-        return new Date(row.getValue("created_at")).toLocaleDateString();
-      },
+      accessorKey: "name",
+      header: "Internal Name",
     },
     {
       id: "actions",
       cell: ({ row }) => {
-        const student = row.original;
+        const grade = row.original;
 
         return (
           <DropdownMenu>
@@ -81,7 +71,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Edit student",
+                    title: "Edit class",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -92,7 +82,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Delete student",
+                    title: "Delete class",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -112,9 +102,9 @@ const StudentsPage = () => {
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Classes</h2>
           </div>
-          <div className="text-red-500">Error loading students: {error.message}</div>
+          <div className="text-red-500">Error loading classes: {error.message}</div>
         </div>
       </DashboardLayout>
     );
@@ -124,26 +114,26 @@ const StudentsPage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Classes</h2>
           <Button
             onClick={() => {
               toast({
-                title: "Add student",
+                title: "Add class",
                 description: "This feature is coming soon...",
               });
             }}
           >
-            Add Student
+            Add Class
           </Button>
         </div>
         <DataTable
           columns={columns}
-          data={students}
-          searchKey="full_name"
+          data={grades}
+          searchKey="display_name"
         />
       </div>
     </DashboardLayout>
   );
 };
 
-export default StudentsPage;
+export default ClassesPage;

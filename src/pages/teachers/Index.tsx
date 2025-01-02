@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Student {
+interface Teacher {
   id: string;
   full_name: string;
   role: string;
@@ -24,17 +24,17 @@ interface Student {
   created_at: string;
 }
 
-const StudentsPage = () => {
+const TeachersPage = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["teachers"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .eq("role", "student");
+        .eq("role", "teacher");
 
       if (error) throw error;
       return data;
@@ -43,11 +43,11 @@ const StudentsPage = () => {
 
   useEffect(() => {
     if (data) {
-      setStudents(data);
+      setTeachers(data);
     }
   }, [data]);
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<Teacher>[] = [
     {
       accessorKey: "full_name",
       header: "Name",
@@ -66,7 +66,7 @@ const StudentsPage = () => {
     {
       id: "actions",
       cell: ({ row }) => {
-        const student = row.original;
+        const teacher = row.original;
 
         return (
           <DropdownMenu>
@@ -81,7 +81,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Edit student",
+                    title: "Edit teacher",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -92,7 +92,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Delete student",
+                    title: "Delete teacher",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -112,9 +112,9 @@ const StudentsPage = () => {
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Teachers</h2>
           </div>
-          <div className="text-red-500">Error loading students: {error.message}</div>
+          <div className="text-red-500">Error loading teachers: {error.message}</div>
         </div>
       </DashboardLayout>
     );
@@ -124,21 +124,21 @@ const StudentsPage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Teachers</h2>
           <Button
             onClick={() => {
               toast({
-                title: "Add student",
+                title: "Add teacher",
                 description: "This feature is coming soon...",
               });
             }}
           >
-            Add Student
+            Add Teacher
           </Button>
         </div>
         <DataTable
           columns={columns}
-          data={students}
+          data={teachers}
           searchKey="full_name"
         />
       </div>
@@ -146,4 +146,4 @@ const StudentsPage = () => {
   );
 };
 
-export default StudentsPage;
+export default TeachersPage;

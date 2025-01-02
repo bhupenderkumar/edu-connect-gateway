@@ -16,25 +16,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Student {
+interface Homework {
   id: string;
-  full_name: string;
-  role: string;
-  phone_number: string | null;
+  subject: string;
+  description: string;
+  due_date: string;
+  assigned_date: string;
+  grade_id: number;
   created_at: string;
 }
 
-const StudentsPage = () => {
+const HomeworkPage = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [homework, setHomework] = useState<Homework[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["homework"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("role", "student");
+        .from("homework")
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -43,30 +44,37 @@ const StudentsPage = () => {
 
   useEffect(() => {
     if (data) {
-      setStudents(data);
+      setHomework(data);
     }
   }, [data]);
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<Homework>[] = [
     {
-      accessorKey: "full_name",
-      header: "Name",
+      accessorKey: "subject",
+      header: "Subject",
     },
     {
-      accessorKey: "phone_number",
-      header: "Phone",
+      accessorKey: "description",
+      header: "Description",
     },
     {
-      accessorKey: "created_at",
-      header: "Join Date",
+      accessorKey: "due_date",
+      header: "Due Date",
       cell: ({ row }) => {
-        return new Date(row.getValue("created_at")).toLocaleDateString();
+        return new Date(row.getValue("due_date")).toLocaleDateString();
+      },
+    },
+    {
+      accessorKey: "assigned_date",
+      header: "Assigned Date",
+      cell: ({ row }) => {
+        return new Date(row.getValue("assigned_date")).toLocaleDateString();
       },
     },
     {
       id: "actions",
       cell: ({ row }) => {
-        const student = row.original;
+        const homework = row.original;
 
         return (
           <DropdownMenu>
@@ -81,7 +89,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Edit student",
+                    title: "Edit homework",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -92,7 +100,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Delete student",
+                    title: "Delete homework",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -112,9 +120,9 @@ const StudentsPage = () => {
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Homework</h2>
           </div>
-          <div className="text-red-500">Error loading students: {error.message}</div>
+          <div className="text-red-500">Error loading homework: {error.message}</div>
         </div>
       </DashboardLayout>
     );
@@ -124,26 +132,26 @@ const StudentsPage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Homework</h2>
           <Button
             onClick={() => {
               toast({
-                title: "Add student",
+                title: "Add homework",
                 description: "This feature is coming soon...",
               });
             }}
           >
-            Add Student
+            Add Homework
           </Button>
         </div>
         <DataTable
           columns={columns}
-          data={students}
-          searchKey="full_name"
+          data={homework}
+          searchKey="subject"
         />
       </div>
     </DashboardLayout>
   );
 };
 
-export default StudentsPage;
+export default HomeworkPage;

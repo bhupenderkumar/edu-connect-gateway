@@ -16,25 +16,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Student {
+interface Fee {
   id: string;
-  full_name: string;
-  role: string;
-  phone_number: string | null;
+  student_id: string;
+  amount: number;
+  due_date: string;
+  status: string;
+  payment_date: string | null;
   created_at: string;
 }
 
-const StudentsPage = () => {
+const FeesPage = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [fees, setFees] = useState<Fee[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["fees"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("role", "student");
+        .from("fees")
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -43,30 +44,45 @@ const StudentsPage = () => {
 
   useEffect(() => {
     if (data) {
-      setStudents(data);
+      setFees(data);
     }
   }, [data]);
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<Fee>[] = [
     {
-      accessorKey: "full_name",
-      header: "Name",
+      accessorKey: "student_id",
+      header: "Student ID",
     },
     {
-      accessorKey: "phone_number",
-      header: "Phone",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Join Date",
+      accessorKey: "amount",
+      header: "Amount",
       cell: ({ row }) => {
-        return new Date(row.getValue("created_at")).toLocaleDateString();
+        return `$${row.getValue("amount")}`;
+      },
+    },
+    {
+      accessorKey: "due_date",
+      header: "Due Date",
+      cell: ({ row }) => {
+        return new Date(row.getValue("due_date")).toLocaleDateString();
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+    },
+    {
+      accessorKey: "payment_date",
+      header: "Payment Date",
+      cell: ({ row }) => {
+        const date = row.getValue("payment_date");
+        return date ? new Date(date as string).toLocaleDateString() : "-";
       },
     },
     {
       id: "actions",
       cell: ({ row }) => {
-        const student = row.original;
+        const fee = row.original;
 
         return (
           <DropdownMenu>
@@ -81,7 +97,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Edit student",
+                    title: "Edit fee",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -92,7 +108,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Delete student",
+                    title: "Delete fee",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -112,9 +128,9 @@ const StudentsPage = () => {
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Fees</h2>
           </div>
-          <div className="text-red-500">Error loading students: {error.message}</div>
+          <div className="text-red-500">Error loading fees: {error.message}</div>
         </div>
       </DashboardLayout>
     );
@@ -124,26 +140,26 @@ const StudentsPage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Fees</h2>
           <Button
             onClick={() => {
               toast({
-                title: "Add student",
+                title: "Add fee",
                 description: "This feature is coming soon...",
               });
             }}
           >
-            Add Student
+            Add Fee
           </Button>
         </div>
         <DataTable
           columns={columns}
-          data={students}
-          searchKey="full_name"
+          data={fees}
+          searchKey="student_id"
         />
       </div>
     </DashboardLayout>
   );
 };
 
-export default StudentsPage;
+export default FeesPage;

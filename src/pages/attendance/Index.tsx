@@ -16,25 +16,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Student {
+interface Attendance {
   id: string;
-  full_name: string;
-  role: string;
-  phone_number: string | null;
+  student_id: string;
+  date: string;
+  status: string;
+  marked_by: string;
   created_at: string;
 }
 
-const StudentsPage = () => {
+const AttendancePage = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["attendance"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("role", "student");
+        .from("attendance")
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -43,30 +43,30 @@ const StudentsPage = () => {
 
   useEffect(() => {
     if (data) {
-      setStudents(data);
+      setAttendance(data);
     }
   }, [data]);
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<Attendance>[] = [
     {
-      accessorKey: "full_name",
-      header: "Name",
+      accessorKey: "student_id",
+      header: "Student ID",
     },
     {
-      accessorKey: "phone_number",
-      header: "Phone",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Join Date",
+      accessorKey: "date",
+      header: "Date",
       cell: ({ row }) => {
-        return new Date(row.getValue("created_at")).toLocaleDateString();
+        return new Date(row.getValue("date")).toLocaleDateString();
       },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
     },
     {
       id: "actions",
       cell: ({ row }) => {
-        const student = row.original;
+        const attendance = row.original;
 
         return (
           <DropdownMenu>
@@ -81,7 +81,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Edit student",
+                    title: "Edit attendance",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -92,7 +92,7 @@ const StudentsPage = () => {
               <DropdownMenuItem
                 onClick={() => {
                   toast({
-                    title: "Delete student",
+                    title: "Delete attendance",
                     description: "This feature is coming soon...",
                   });
                 }}
@@ -112,9 +112,9 @@ const StudentsPage = () => {
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Attendance</h2>
           </div>
-          <div className="text-red-500">Error loading students: {error.message}</div>
+          <div className="text-red-500">Error loading attendance: {error.message}</div>
         </div>
       </DashboardLayout>
     );
@@ -124,26 +124,26 @@ const StudentsPage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Students</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Attendance</h2>
           <Button
             onClick={() => {
               toast({
-                title: "Add student",
+                title: "Mark attendance",
                 description: "This feature is coming soon...",
               });
             }}
           >
-            Add Student
+            Mark Attendance
           </Button>
         </div>
         <DataTable
           columns={columns}
-          data={students}
-          searchKey="full_name"
+          data={attendance}
+          searchKey="student_id"
         />
       </div>
     </DashboardLayout>
   );
 };
 
-export default StudentsPage;
+export default AttendancePage;
