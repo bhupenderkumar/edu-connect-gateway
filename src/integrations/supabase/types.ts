@@ -104,6 +104,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_templates: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["fee_template_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["fee_template_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["fee_template_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           created_at: string | null
@@ -148,32 +178,68 @@ export type Database = {
       fees: {
         Row: {
           amount: number
+          balance_remaining: number | null
           created_at: string | null
+          document_url: string | null
           due_date: string
           id: string
+          month: number
+          notes: string | null
           payment_date: string | null
           status: string
           student_id: string | null
+          submitted_by: string | null
+          template_id: string | null
+          year: number
         }
         Insert: {
           amount: number
+          balance_remaining?: number | null
           created_at?: string | null
+          document_url?: string | null
           due_date: string
           id?: string
+          month?: number
+          notes?: string | null
           payment_date?: string | null
           status: string
           student_id?: string | null
+          submitted_by?: string | null
+          template_id?: string | null
+          year?: number
         }
         Update: {
           amount?: number
+          balance_remaining?: number | null
           created_at?: string | null
+          document_url?: string | null
           due_date?: string
           id?: string
+          month?: number
+          notes?: string | null
           payment_date?: string | null
           status?: string
           student_id?: string | null
+          submitted_by?: string | null
+          template_id?: string | null
+          year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fees_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fees_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "fee_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       grades: {
         Row: {
@@ -653,6 +719,13 @@ export type Database = {
     Enums: {
       attendance_status: "present" | "absent" | "late"
       fee_status: "paid" | "pending" | "overdue"
+      fee_template_type:
+        | "tuition"
+        | "transport"
+        | "uniform"
+        | "books"
+        | "activities"
+        | "other"
       homework_status: "pending" | "submitted" | "graded"
       user_role: "admin" | "teacher" | "student"
     }
