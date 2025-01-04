@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash, UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -14,6 +14,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Student {
@@ -27,8 +37,14 @@ interface Student {
 const StudentsPage = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    full_name: "",
+    email: "",
+    phone_number: "",
+  });
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["students"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -46,6 +62,37 @@ const StudentsPage = () => {
       setStudents(data);
     }
   }, [data]);
+
+  const handleAddStudent = async () => {
+    try {
+      const { error } = await supabase.from("users").insert([
+        {
+          full_name: newStudent.full_name,
+          email: newStudent.email,
+          phone_number: newStudent.phone_number,
+          role: "student",
+        },
+      ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Student added successfully",
+      });
+
+      setIsAddingStudent(false);
+      setNewStudent({ full_name: "", email: "", phone_number: "" });
+      refetch(); // Refresh the students list
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add student. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -125,21 +172,62 @@ const StudentsPage = () => {
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold tracking-tight">Students</h2>
-          <Button
-            onClick={() => {
-              toast({
-                title: "Add student",
-                description: "This feature is coming soon...",
-              });
-            }}
-          >
-            Add Student
-          </Button>
+          <Dialog open={isAddingStudent} onOpenChange={setIsAddingStudent}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Student</DialogTitle>
+                <DialogDescription>
+                  Enter the student's details below.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={newStudent.full_name}
+                    onChange={(e) =>
+                      setNewStudent({ ...newStudent, full_name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newStudent.email}
+                    onChange={(e) =>
+                      setNewStudent({ ...newStudent, email: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={newStudent.phone_number}
+                    onChange={(e) =>
+                      setNewStudent({ ...newStudent, phone_number: e.target.value })
+                    }
+                  />
+                </div>
+                <Button onClick={handleAddStudent}>Add Student</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
         <DataTable
           columns={columns}
           data={students}
           searchKey="full_name"
+          isLoading={isLoading}
         />
       </div>
     </DashboardLayout>
